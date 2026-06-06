@@ -14,7 +14,7 @@ from inititalSumsMMP import sums
 #Bi tracks the indices i in B for which B[i]
 #R tracks the integers left to place into coverings
 #rMass tracks the reciprical mass of R
-#nMass tracks the 
+#nMass tracks the needed mass of R
 
 #returns list B, list Bi, list R, float rMass, float nMass
 #arguments: int list moduli, int p, boolean printB
@@ -26,20 +26,27 @@ from inititalSumsMMP import sums
 #nMass = p times (1-B[0])
 def lemma10Setup(moduli,p,printB):
     if printB:
+        print()
         print("Setting up LEMMA TEN with prime",p,"and",len(moduli), "moduli from", min(moduli),"to",max(moduli))
+        print(moduli)
     M0 = [m for m in moduli if m % p != 0]
     R = [(m//p) for m in moduli if m % p == 0]
     S  = recipricalSum(M0)
+    
     B = [S for _ in range(p)]
     Bi = [i for i in range(p)]
     rMass = recipricalSum(R)
     nMass = (1-S)*p
-    if printB:
-        print(len(R),"left to be placed:",R)
-        print("There are",len(Bi),"bins less than 1")
-        print("Each bin needs",1-S)
-        print("Reciprical mass:",rMass)
-        print("Needed mass",nMass)
+    if S > 1:
+        if printB:
+            print("Bin sum is greater than 1, CBP needed")
+    else:
+        if printB:
+            print(len(R),"left to be placed:",R)
+            print("There are",len(Bi),"bins less than 1")
+            print("Each bin needs",1-S)
+            print("Reciprical mass:",rMass)
+            print("Needed mass",nMass)
     return B,Bi,R,rMass,nMass
 
 #returns bool
@@ -119,7 +126,7 @@ def place(B,Bi,R,rMass,nMass,i,printB):
 def lemma10CBPString(moduli,p,printB):
     if printB:
         print("Running LEMMA TEN CBP with prime",p,"and",len(moduli),"moduli from",min(moduli),"to",max(moduli))
-    opString ="wsp"
+    opString =""
 
     M0 = [m for m in moduli if m % p != 0]
     M1 = [m for m in moduli if m % p == 0]
@@ -145,9 +152,11 @@ def lemma10CBPString(moduli,p,printB):
             print("There are",l,"left to be placed")
             print("Placed in critical bin to B_p are:",placed[critIndex:])
             print("Primes coprime to these values are:",coPrimes)
-        for c in coPrimes[1:]:
+        for c in coPrimes[::-1]:
             if c !=p:
-                opString += "wsp" + str(p)  
+                if printB:
+                    print("Running Lemma 10 on Bin",critIndex,"with",str(c))
+                opString += "wsp" + str(c)
                 if lemma10PlaceP(coverings[critIndex],c,True):
                     return opString + "T"
                 else:
@@ -159,59 +168,20 @@ def lemma10CBPString(moduli,p,printB):
         return opString + "p>ltpF"
     
 #returns bool
-#equivelent to lemma10CBPString except returns bool
-def lemma10CBPBool(moduli,p,printB):
-    if printB:
-        print("Running LEMMA TEN CBP with prime",p,"and",len(moduli),"moduli from",min(moduli),"to",max(moduli))
-
-    M0 = [m for m in moduli if m % p != 0]
-    M1 = [m for m in moduli if m % p == 0]
-    M1.sort()
-    R = [(m//p) for m in M1]
-    S = recipricalSum(M0)
-    buckets = [S for _ in range(p) ]
-    coverings = [M0[:] for _ in range(p)]
-
-    placed = []
-    for i in range(p):
-        buckets[i] = buckets[i] + 1/R[i]
-        bisect.insort(coverings[i], R[i])
-        placed.append(R[i])
-    placed_copy = placed[:]
-    R = [m for m in R if not (m in placed_copy and placed_copy.remove(m) is None)]
-    l = len(R)
-    critIndex = p-l-1
-    if critIndex >= 0:
-        coPrimes = getCoprime(placed[critIndex:])
-        if printB:
-            print("Placed first",p,"elements into",p,"bins")
-            print("There are",l,"left to be placed")
-            print("Placed in critical bin to B_p are:",placed[critIndex:])
-            print("Primes coprime to these values are:",coPrimes)
-        for c in coPrimes[1:]:
-            if c !=p:
-                opString += "wsp" + str(p)  
-                if lemma10PlaceP(coverings[critIndex],c,True):
-                    return True
-    else:
-        if printB:
-            print("ERROR: There are",p,"bins and",l,"left to place. Choose better prime")
-    return False
-
-#returns bool
 #arguments: int list moduli, int p, bool printB
 #places first p elements of R into bins, element by element, checking A,B,C after each placement
 #returns true once a contradiction is derived
 #returns false if no contradiction can be derived by placing first p elements of R into seperate bins
 def lemma10PlaceP(moduli,p,printB):
     B,Bi,R,rMass,nMass = lemma10Setup(moduli,p,printB)
-    if len(R) < 1:
-        print("There are no items to be placed. Choose different prime")
-        return False
-    for i in range(p):
-        B,Bi,R,rMass,nMass = place(B,Bi,R,rMass,nMass,i,printB)
-        if runABC(B,Bi,R,rMass,nMass,True):
-            return True
-    if printB:
-        print("With generic distribution, more work is still needed. There are",len(R),"left to place")
+    if B[0] < 1:
+        if len(R) < 1:
+            print("There are no items to be placed. Choose different prime")
+            return False
+        for i in range(p):
+            B,Bi,R,rMass,nMass = place(B,Bi,R,rMass,nMass,i,printB)
+            if runABC(B,Bi,R,rMass,nMass,True):
+                return True
+        if printB:
+            print("With generic distribution, more work is still needed. There are",len(R),"left to place")
     return False

@@ -17,11 +17,16 @@ def allPrimeFactors(moduli):
     L = math.lcm(*moduli)
     return list(factorint(L).keys())
 
+#return bool
+#arguments int d
+def is_prime(d): 
+    return d > 1 and all(d % i != 0 for i in range(2, int(d**0.5) + 1))
+
 #returns int list
 #argument: int list integers
 #returns list of primes that are both less than max(integers) and coprime with all ints in integers, sorted least to greatest
 def getCoprime(integers):
-    return [p for p in range(1, max(integers)) if all(gcd(p, n) == 1 for n in integers)]
+    return [p for p in range(1, max(integers)) if is_prime(p) and all(gcd(p, n) == 1 for n in integers)]
 
 #returns int list
 #argument: int limit

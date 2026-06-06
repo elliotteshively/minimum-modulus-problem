@@ -14,37 +14,62 @@ maxModuliBound = 11
 def runM(m,maxModuliBound,printB):
     if printB:
         print()
+        print("-------------------------------------------------------------------------------------------------------------")
+        print()
         print("Running checks on m =",m)
     pathString = str(m) + "."
     moduli = list(range(m,m*maxModuliBound+1))
 
-    pathString += "7"
+    pathString += "7f"
     moduli = cor7(moduli,True)
     if recipricalSum(moduli) < 1:
         if printB:
             print("Reciprical sum of moduli is",recipricalSum(moduli))
         return pathString + "T"
     
-    pathString += "F.8"
+    pathString += "F.8f"
     moduli = cor8(moduli,True)
     if recipricalSum(moduli) < 1:
         if printB:
             print("Reciprical sum of moduli is",recipricalSum(moduli))
         return pathString + "T"
     
-    pathString += "F.9"
+    pathString += "F.9f"
     moduli = cor9(moduli,True)
     if recipricalSum(moduli) < 1:
         if printB:
             print("Reciprical sum of moduli is",recipricalSum(moduli))
         return pathString + "T"
     
-    p = maxPrimeFactor(moduli)
-    pathString += "F.10GDwp" + str(p)
-    if lemma10PlaceP(moduli,p,True):
+    pathString += "F.7s"
+    moduli = cor7(moduli,True)
+    if recipricalSum(moduli) < 1:
+        if printB:
+            print("Reciprical sum of moduli is",recipricalSum(moduli))
         return pathString + "T"
     
-    pathString += "F.10CBPwfp" + str(p) + lemma10CBPString(moduli,p,True)
+    pathString += "F.8s"
+    moduli = cor8(moduli,True)
+    if recipricalSum(moduli) < 1:
+        if printB:
+            print("Reciprical sum of moduli is",recipricalSum(moduli))
+        return pathString + "T"
+    
+    pathString += "F.9s"
+    moduli = cor9(moduli,True)
+    if recipricalSum(moduli) < 1:
+        if printB:
+            print("Reciprical sum of moduli is",recipricalSum(moduli))
+        return pathString + "T"
+    
+    pList = allPrimeFactors(moduli)
+    for p in pList[::-1]:
+        pathString += "F.10GDwp" + str(p)
+        if lemma10PlaceP(moduli,p,True):
+            return pathString + "T"
+        pathString += "F.10CBPwfp" + str(p) + lemma10CBPString(moduli,p,True)
+        if pathString[-1] == 'T':
+            return pathString
     return pathString
 
 #returns list of strings
@@ -69,6 +94,9 @@ def runStrings(stringList):
     sevenCount = 0
     eightCount= 0
     nineCount= 0
+    sevenSecondCount = 0
+    eightSecondCount= 0
+    nineSecondCount= 0
     tenCount = 0
     CBPCount = 0
     falseCount = 0
@@ -80,21 +108,30 @@ def runStrings(stringList):
     notSolved = []
 
     for s in stringList:
-        if "7T" in s: #if seven enough
+        if "7fT" in s: #if seven enough
             sevenCount += 1
             solvedBy789.append(s.split(".")[0])
-        if "8T" in s: #if needed 8, enough
+        if "8fT" in s: #if needed 8, enough
             eightCount += 1
             solvedBy789.append(s.split(".")[0])
-        if "9T" in s: #if needed 9, enough
+        if "9fT" in s: #if needed 9, enough
             nineCount += 1
             solvedBy789.append(s.split(".")[0])
-        if "7F.8F.9F" in s:
+        if "7sT" in s: #if seven enough
+            sevenSecondCount += 1
+            solvedBy789.append(s.split(".")[0])
+        if "8sT" in s: #if needed 8, enough
+            eightSecondCount += 1
+            solvedBy789.append(s.split(".")[0])
+        if "9sT" in s: #if needed 9, enough
+            nineSecondCount += 1
+            solvedBy789.append(s.split(".")[0])
+        if "7sF.8sF.9sF" in s:
             notSolvedBy789.append(s.split(".")[0])
             if not ("CBP" in s):
                 tenCount += 1
                 solvedBy10.append(s.split(".")[0])
-            elif s[-1] == 'T':
+            elif s.endswith('T'):
                 CBPCount += 1
                 solvedByCBP.append(s.split(".")[0])
             else:
@@ -102,10 +139,13 @@ def runStrings(stringList):
                 notSolved.append(s.split(".")[0])
 
 
-
+    print(len(stringList),"m values ran for")
     print(sevenCount,"true after seven")
     print(eightCount,"true after eight")
     print(nineCount,"true after nine")
+    print(sevenSecondCount,"true after seven second time")
+    print(eightSecondCount,"true after eight second time")
+    print(nineSecondCount,"true after nine second time")
     print(tenCount,"true after gen placement")
     print(CBPCount,"true after CBP")
     print(falseCount,"unsolved")
